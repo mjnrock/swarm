@@ -1312,9 +1312,9 @@
     chalk "^4.0.0"
 
 "@lespantsfancy/hive@^0.1.58":
-  version "0.1.58"
-  resolved "https://registry.yarnpkg.com/@lespantsfancy/hive/-/hive-0.1.58.tgz#f897e9e10028daa7a99e47caef1273b096c41ffa"
-  integrity sha512-dQrEeOaQxYdRlwDcHQH4SaVOgd4m54doYNVCnjvgtojvDOfJ9j0/6k2HGiLaOfdZDnqufUtBArzdNVJdqzLFdw==
+  version "0.1.60"
+  resolved "https://registry.yarnpkg.com/@lespantsfancy/hive/-/hive-0.1.60.tgz#0cd82160118b7841f2b00df265302ce0f4d717ab"
+  integrity sha512-wx9ubUFpGrzXtA8XzoJahB+rr4pEwJmmOsH8WQfyTKKSi0sBY8yojxraLnpkJcYb1vmUE1/riXRLR63N/zTKDA==
   dependencies:
     is-base64 "^1.1.0"
     uuid "^8.1.0"
