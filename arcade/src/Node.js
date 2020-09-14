@@ -2,7 +2,7 @@ import EventEmitter from "events";
 import { v4 as uuidv4 } from "uuid";
 
 export const EventType = {
-    UPDATE: "Node.Next",
+    NEXT: "Node.Next",
 };
 
 export default class Node extends EventEmitter {
@@ -14,12 +14,40 @@ export default class Node extends EventEmitter {
         this.config = {
             suppress: false,    // Configuration flag to en/disable event dispatching
 
-            ...config,
+            ...config,          // Any additional meta data that is relevant to the runtime node (accessible via "this.config" in reducer/effect)
         };
 
         this._reducers = new Set();
         this._effects = new Set();
     }
+
+
+    addReducer(...fns) {
+        for(let fn of fns) {
+            if(typeof fn === "function" || fn instanceof Node) {
+                this._reducers.add(fn);
+            }
+        }
+    }
+    removeReducer(...fns) {
+        for(let fn of fns) {
+            this._reducers.delete(fn);
+        }
+    }
+
+    addEffect(...fns) {
+        for(let fn of fns) {
+            if(typeof fn === "function" || fn instanceof Node) {
+                this._effects.add(fn);
+            }
+        }
+    }
+    removeEffect(...fns) {
+        for(let fn of fns) {
+            this._effects.delete(fn);
+        }
+    }
+    
 
     // "Safe" state traverser
     $(path) {
@@ -48,6 +76,8 @@ export default class Node extends EventEmitter {
     }
 
     next(...args) {
+        const oldState = { ...this.state };
+
         for(let fn of this._reducers.values()) {
             if(fn instanceof Node) {
                 this.state = fn.next.call(fn, this.state, ...args) || this.state;   // Allow for a Node itself to be a reducer (via its .next)
@@ -57,46 +87,32 @@ export default class Node extends EventEmitter {
         }
 
         for(let fn of this._effects.values()) {
-            fn.call(this, this.state, ...args);
+            if(fn instanceof Node) {
+                fn.next(...args);   // Allow for a Node itself to be invoked as a direct consequence of another Node's invocation
+            } else {
+                fn.call(this, this.state, ...args);
+            }
         }
 
         if(this.config.suppress !== true) {
-            this.emit(EventType.UPDATE, this.state);
+            //NOTE  As this is just an information event, spread syntax is used; therefore, utilize accordingly (e.g. no classes will remain)
+            this.emit(EventType.NEXT, {
+                current: { ...this.state },
+                previous: oldState,
+            });
         }
 
         return this.state;
     }
 
-    addReducer(...fns) {
-        for(let fn of fns) {
-            if(typeof fn === "function" || fn instanceof Node) {
-                this._reducers.add(fn);
-            }
-        }
+
+    suppress() {
+        this.config.suppress = true;
 
         return this;
     }
-    removeReducer(...fns) {
-        for(let fn of fns) {
-            this._reducers.delete(fn);
-        }
-
-        return this;
-    }
-
-    addEffect(...fns) {
-        for(let fn of fns) {
-            if(typeof fn === "function") {
-                this._effects.add(fn);
-            }
-        }
-
-        return this;
-    }
-    removeEffect(...fns) {
-        for(let fn of fns) {
-            this._effects.delete(fn);
-        }
+    unsuppress() {
+        this.config.suppress = false;
 
         return this;
     }

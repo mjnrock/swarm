@@ -1,2 +1,2 @@
 require = require("esm")(module/*, options*/)
-module.exports = require("./tests/Node.test.js")
+module.exports = require("./tests/WebSocket.test.js")
