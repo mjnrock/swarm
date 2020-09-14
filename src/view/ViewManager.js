@@ -38,12 +38,4 @@ export default class ViewManager extends Registry {
 
         return this._current;
     }
-
-    start() {
-        this.use("GameView");
-        Game.$.start();
-    }
-    stop() {
-        Game.$.stop();
-    }
 }
