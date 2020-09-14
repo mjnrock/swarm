@@ -3,9 +3,9 @@ import { v4 as uuidv4 } from "uuid";
 import Channel from "./Channel";
 
 export default class Station extends EventEmitter {
-    constructor(channels = []) {
+    constructor(channels = [], { id } = {}) {
         super();
-        this.id = uuidv4();
+        this.id = id || uuidv4();
 
         this.channels = new Map();
 

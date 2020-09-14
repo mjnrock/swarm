@@ -1,13 +1,24 @@
 import EventEmitter from "events";
+import { v4 as uuidv4 } from "uuid";
+
+export const EventType = {
+    UPDATE: "Node.Next",
+};
 
 export default class Node extends EventEmitter {
-    constructor({ state = {} } = {}) {
+    constructor({ state = {}, config = {}, id } = {}) {
         super();
+        this.id = id || uuidv4();
+
+        this.state = state;
+        this.config = {
+            suppress: false,    // Configuration flag to en/disable event dispatching
+
+            ...config,
+        };
 
         this._reducers = new Set();
         this._effects = new Set();
-
-        this.state = state;     // No immediate need to make state updates functional, as it often could contains class instances, which would get into copy issues
     }
 
     // "Safe" state traverser
@@ -47,6 +58,10 @@ export default class Node extends EventEmitter {
 
         for(let fn of this._effects.values()) {
             fn.call(this, this.state, ...args);
+        }
+
+        if(this.config.suppress !== true) {
+            this.emit(EventType.UPDATE, this.state);
         }
 
         return this.state;

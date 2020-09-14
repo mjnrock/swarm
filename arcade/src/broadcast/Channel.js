@@ -2,9 +2,9 @@ import EventEmitter from "events";
 import { v4 as uuidv4 } from "uuid";
 
 export default class Channel extends EventEmitter {
-    constructor(subscribors = []) {
+    constructor(subscribors = [], { id } = {}) {
         super();
-        this.id = uuidv4();
+        this.id = id || uuidv4();
 
         this.subscribors = new Map(subscribors);
     }
