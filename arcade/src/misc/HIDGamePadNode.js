@@ -72,7 +72,11 @@ export default class HIDGamePadNode extends Node {
                     }
                 }
 
-                state.current = result;
+                return {
+                    ...state,
+
+                    current: result,
+                };
             }
 
             return state;

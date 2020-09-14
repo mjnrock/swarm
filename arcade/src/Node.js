@@ -77,25 +77,31 @@ export default class Node extends EventEmitter {
     }
 
     //FIXME This is not efficient at all
+    /**
+     * "return @state;" to prevent a NEXT event, "return { ...@state };" to invoke.
+     * @param  {...any} args 
+     */
     next(...args) {
         const oldState = { ...this.state };
-        let newState = { ...this.state };
+        let newState = this.state;
 
         for(let fn of this._reducers.values()) {
             if(fn instanceof Node) {
-                newState = fn.next.call(fn, newState, ...args) || newState;   // Allow for a Node itself to be a reducer (via its .next)
+                newState = fn.next.call(fn, newState, ...args);   // Allow for a Node itself to be a reducer (via its .next)
             } else {
-                newState = fn.call(this, newState, ...args) || newState;
+                newState = fn.call(this, newState, ...args);
             }
         }
 
-        if(JSON.stringify(this.state) !== JSON.stringify(newState)) {
-            this.state = { ...newState };
+        if(this.state === newState) {
+            return;
+        } else if(JSON.stringify(this.state) !== JSON.stringify(newState)) {
+            this.state = newState;
 
             if(this.config.suppress !== true) {
                 //NOTE  As this is just an information event, spread syntax is used; therefore, utilize accordingly (e.g. no classes will remain)
                 this.emit(EnumEventType.NEXT, {
-                    current: newState,
+                    current: { ...newState },
                     previous: oldState,
                 });
             }
