@@ -1,5 +1,5 @@
 import Node from "../Node";
-import { v4 as uuidv4, validate as isUUID } from "uuid";
+import { v4 as uuidv4, validate as isUUID, parse } from "uuid";
 
 export const EnumType = {
     CLIENT: "client",
@@ -96,6 +96,8 @@ export default class WebSocketNode extends Node {
     onMessage(msg) {
         try {
             const obj = JSON.parse(msg);
+
+            console.log(obj);
 
             if(this.isClient) {
                 if(obj.type === EnumMessageType.CLIENT_ID) {
