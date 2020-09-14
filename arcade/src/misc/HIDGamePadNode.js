@@ -2,7 +2,26 @@ import HID from "node-hid";
 import Node from "./../Node";
 import { Bitwise } from "@lespantsfancy/hive/lib/ext/Helper";
 
-//  [ byte index, bit flag ]
+/**
+ * Entries, if modified, should conform to: [ byte index, bit flag, ?isEquality ] to use on the HID buffer
+ * Will return a binding template for DragonRise::(vid=121, pid=6) testing.
+ * When consumed by the Node, this.state.current (this.current) will look similar to this example:
+ * {
+    btn_1: false,
+    btn_2: false,
+    btn_3: false,
+    btn_4: false,
+    btn_5: false,
+    btn_6: false,
+    btn_start: false,        
+    dir_left: false,
+    dir_right: 1600122159977,
+    dir_up: false,
+    dir_down: 1600122159953  
+    }
+ * 
+ * The "false" represents no current activation, while the "<long>" is the Date.now() of the activation (thus can be used for duration checking (e.g. channeling, regen, charging, etc.))
+ */
 export const BindingTemplate = () => ({
     btn_1: [ 5, 2 << 3 ],
     btn_2: [ 5, 2 << 4 ],

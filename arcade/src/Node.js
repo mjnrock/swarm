@@ -78,7 +78,7 @@ export default class Node extends EventEmitter {
 
     //FIXME This is not efficient at all
     /**
-     * "return @state;" to prevent a NEXT event, "return { ...@state };" to invoke.
+     * Reducers should "return @state;" to prevent a NEXT event, or "return { ...@state };" to invoke it, instead.
      * @param  {...any} args 
      */
     next(...args) {
