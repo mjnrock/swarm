@@ -1,8 +1,9 @@
 import EventEmitter from "events";
 import { v4 as uuidv4 } from "uuid";
 
-export const EventType = {
+export const EnumEventType = {
     NEXT: "Node.Next",
+    ERROR: "Node.Error",
 };
 
 export default class Node extends EventEmitter {
@@ -75,14 +76,28 @@ export default class Node extends EventEmitter {
         return result;
     }
 
+    //FIXME This is not efficient at all
     next(...args) {
         const oldState = { ...this.state };
+        let newState = { ...this.state };
 
         for(let fn of this._reducers.values()) {
             if(fn instanceof Node) {
-                this.state = fn.next.call(fn, this.state, ...args) || this.state;   // Allow for a Node itself to be a reducer (via its .next)
+                newState = fn.next.call(fn, newState, ...args) || newState;   // Allow for a Node itself to be a reducer (via its .next)
             } else {
-                this.state = fn.call(this, this.state, ...args) || this.state;
+                newState = fn.call(this, newState, ...args) || newState;
+            }
+        }
+
+        if(JSON.stringify(this.state) !== JSON.stringify(newState)) {
+            this.state = { ...newState };
+
+            if(this.config.suppress !== true) {
+                //NOTE  As this is just an information event, spread syntax is used; therefore, utilize accordingly (e.g. no classes will remain)
+                this.emit(EnumEventType.NEXT, {
+                    current: newState,
+                    previous: oldState,
+                });
             }
         }
 
@@ -92,14 +107,6 @@ export default class Node extends EventEmitter {
             } else {
                 fn.call(this, this.state, ...args);
             }
-        }
-
-        if(this.config.suppress !== true) {
-            //NOTE  As this is just an information event, spread syntax is used; therefore, utilize accordingly (e.g. no classes will remain)
-            this.emit(EventType.NEXT, {
-                current: { ...this.state },
-                previous: oldState,
-            });
         }
 
         return this.state;
@@ -115,5 +122,10 @@ export default class Node extends EventEmitter {
         this.config.suppress = false;
 
         return this;
+    }
+
+
+    error(e) {
+        this.emit(EnumEventType.ERROR, e);
     }
 };
