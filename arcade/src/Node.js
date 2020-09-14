@@ -1,5 +1,6 @@
 import EventEmitter from "events";
 import { v4 as uuidv4 } from "uuid";
+import { deepEqual } from "fast-equals";
 
 export const EnumEventType = {
     NEXT: "Node.Next",
@@ -76,7 +77,6 @@ export default class Node extends EventEmitter {
         return result;
     }
 
-    //FIXME This is not efficient at all
     /**
      * Reducers should "return @state;" to prevent a NEXT event, or "return { ...@state };" to invoke it, instead.
      * @param  {...any} args 
@@ -95,7 +95,7 @@ export default class Node extends EventEmitter {
 
         if(this.state === newState) {
             return;
-        } else if(JSON.stringify(this.state) !== JSON.stringify(newState)) {
+        } else if(!deepEqual(this.state, newState)) {    //FIXME This could be a faster comparison, instead
             this.state = newState;
 
             if(this.config.suppress !== true) {
