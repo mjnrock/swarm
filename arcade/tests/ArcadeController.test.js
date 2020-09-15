@@ -1,6 +1,6 @@
 import WebSocket from "ws";
 import WebSocketNode from "../src/network/WebSocketNode";
-import HIDGamePadNode from "./../src/misc/HIDGamePadNode";
+import HIDGamePadNode, { EnumEventType as HIDEnumEventType } from "./../src/misc/HIDGamePadNode";
 import { EnumEventType } from "./../src/Node";
 
 
@@ -13,9 +13,22 @@ const c1 = new WebSocketNode({
 });
 
 const hid = new HIDGamePadNode({ vid: 121, pid: 6 });
-hid.addListener(EnumEventType.NEXT, obj => {
-    c1.ws.send(JSON.stringify({
-        type: "GamePad.Input",
-        payload: obj.current.current
-    }));
+
+const wssend = (type, payload) => JSON.stringify({
+    type,
+    payload,
+});
+
+
+hid.addListener(HIDEnumEventType.ACTIVATE, obj => {
+    c1.ws.send(wssend(HIDEnumEventType.ACTIVATE, obj));
+});
+hid.addListener(HIDEnumEventType.DEACTIVATE, obj => {
+    c1.ws.send(wssend(HIDEnumEventType.DEACTIVATE, obj));
+});
+hid.addListener(HIDEnumEventType.CHORD_ACTIVE, obj => {
+    c1.ws.send(wssend(HIDEnumEventType.CHORD_ACTIVE, obj));
+});
+hid.addListener(HIDEnumEventType.CHORD_DEACTIVATE, obj => {
+    c1.ws.send(wssend(HIDEnumEventType.CHORD_DEACTIVATE, obj));
 });

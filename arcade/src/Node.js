@@ -109,9 +109,15 @@ export default class Node extends EventEmitter {
 
         for(let fn of this._effects.values()) {
             if(fn instanceof Node) {
-                fn.next(...args);   // Allow for a Node itself to be invoked as a direct consequence of another Node's invocation
+                fn.next.call(fn, {
+                    current: { ...newState },
+                    previous: oldState,
+                }, ...args);   // Allow for a Node itself to be invoked as a direct consequence of another Node's invocation
             } else {
-                fn.call(this, this.state, ...args);
+                fn.call(this, {
+                    current: { ...newState },
+                    previous: oldState,
+                }, ...args);
             }
         }
 

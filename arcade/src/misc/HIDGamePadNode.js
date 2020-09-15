@@ -1,6 +1,7 @@
 import HID from "node-hid";
 import Node from "./../Node";
 import { Bitwise } from "@lespantsfancy/hive/lib/ext/Helper";
+import { deepEqual } from "fast-equals";
 
 /**
  * Entries, if modified, should conform to: [ byte index, bit flag, ?isEquality ] to use on the HID buffer
@@ -38,6 +39,13 @@ export const BindingTemplate = () => ({
     dir_up: [ 1, 255, true ],
     dir_down: [ 1, 0, true ],
 });
+
+export const EnumEventType = {
+    ACTIVATE: "HIDGamePadNode.Activate",
+    DEACTIVATE: "HIDGamePadNode.Deactivate",
+    CHORD_ACTIVE: "HIDGamePadNode.ChordActive",
+    CHORD_DEACTIVATE: "HIDGamePadNode.ChordDeactivate",
+};
 
 export default class HIDGamePadNode extends Node {
     constructor({ path, vid, pid, binding = BindingTemplate() } = {}, opts = {}) {
@@ -99,6 +107,57 @@ export default class HIDGamePadNode extends Node {
             }
 
             return state;
+        });
+
+        this.addEffect((state, ...args) => {
+            let { current, previous } = state;
+
+            if(!deepEqual(current, previous)) {
+                current = current.current;
+                previous = previous.current;
+
+                const active = [];
+                const deactive = [];
+    
+                for(let key in current) {
+                    const payload = {
+                        key,
+                        value: current[ key ],
+                    };
+
+                    if(current[ key ] !== previous[ key ]) {
+                        if(previous[ key ] === false) {
+                            this.emit(EnumEventType.ACTIVATE, {
+                                ...payload,
+                                timestamp: Date.now(),
+                            });
+                        } else {
+                            deactive.push(payload);
+                            this.emit(EnumEventType.DEACTIVATE, {
+                                ...payload,
+                                timestamp: Date.now(),
+                            });
+                        }
+                    }
+
+                    if(current[ key ] !== false) {
+                        active.push(payload);
+                    }
+                }
+                
+                if(active.length > 1) {
+                    this.emit(EnumEventType.CHORD_ACTIVE, {
+                        value: active,
+                        timestamp: Date.now(),
+                    });
+                }
+                if(deactive.length > 1) {
+                    this.emit(EnumEventType.CHORD_DEACTIVATE, {
+                        value: deactive,
+                        timestamp: Date.now(),
+                    });
+                }
+            }
         });
     }
 
