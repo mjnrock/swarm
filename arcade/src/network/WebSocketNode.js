@@ -201,7 +201,6 @@ export default class WebSocketNode extends Node {
                 this.state.hooks.receive.call(this, data);
             }
         } catch (e) {
-            console.log(e)
             this.onError(e);
         }
     }
