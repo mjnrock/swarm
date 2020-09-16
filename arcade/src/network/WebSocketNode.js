@@ -146,7 +146,7 @@ export default class WebSocketNode extends Node {
             try {
                 this.ws.send(JSON.stringify({
                     type,
-                    payload,
+                    payload: typeof payload === "object" ? payload : { value: payload },
                 }));
             } catch(e) {
                 this.onError(e);
@@ -159,7 +159,7 @@ export default class WebSocketNode extends Node {
                 client = this.state.clients.get(clientId);
             } else if(typeof clientId === "object") {
                 client = clientId;
-            }            
+            }
 
             if(client) {
                 try {
@@ -175,7 +175,7 @@ export default class WebSocketNode extends Node {
     }
     broadcast(type, payload) {
         if(this.isServer) {
-            this.ws.clients.forEach(function each(client) {
+            this.ws.clients.forEach(client => {
                 if(client.readyState === 1) {
                     this.send(client, type, payload);
                 }
@@ -186,19 +186,24 @@ export default class WebSocketNode extends Node {
     onOpen() {}
     onMessage(msg) {
         try {
-            const obj = JSON.parse(msg);
-            const data = "data" in obj ? obj.data : obj;
+            if(this.isServer) {
+                const data = JSON.parse(msg);
+            
+                if(typeof this.state.hooks.receive === "function") {
+                    this.state.hooks.receive.call(this, data);
+                }
+            } else {
+                const data = JSON.parse(msg.data);
 
-            if(this.isClient) {
                 if(data.type === EnumMessageType.CLIENT_ID) {
                     if(isUUID(data.payload)) {
                         this.state.clientId = data.payload;      // Save assigned UUID from server
                     }
-                }
-            }
+                }                
             
-            if(typeof this.state.hooks.receive === "function") {
-                this.state.hooks.receive.call(this, data);
+                if(typeof this.state.hooks.receive === "function") {
+                    this.state.hooks.receive.call(this, data);
+                }
             }
         } catch (e) {
             this.onError(e);
