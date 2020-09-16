@@ -31,77 +31,47 @@ export const EnumCloseCode = {
 export default class WebSocketNode extends Node {
     constructor({ server = [], client = [], ws, wss, receive } = {}, opts = {}) {
         super(opts);
+        
+        this.hooks = {
+            receive,
+        };
 
         if(wss) {
-            this.state = {
-                ws: wss,
-                type: EnumType.SERVER,
-                hooks: {
-                    receive,
-                },
-                clients: new Map(),
-            };
+            this.ws = wss;
+            this.type = EnumType.SERVER;
         } else if(server.length) {
-            this.state = {
-                ws: new WebSocket.Server(...server),
-                type: EnumType.SERVER,
-                hooks: {
-                    receive,
-                },
-                clients: new Map(),
-            };
+            this.ws = new WebSocket.Server(...server);
+            this.type = EnumType.SERVER;
         } else if(ws) {
-            this.state = {
-                ws,
-                type: EnumType.CLIENT,
-                hooks: {
-                    receive,
-                },
-                clientId: null,
-            };
+            this.ws = ws;
+            this.type = EnumType.CLIENT;
         } else if(client.length) {
-            this.state = {
-                ws: new WebSocket(...client),
-                type: EnumType.CLIENT,
-                hooks: {
-                    receive,
-                },
-                clientId: null,
-            };
+            this.ws = new WebSocket(...client);
+            this.type = EnumType.CLIENT;
         }
 
         if(this.isServer) {
-            this.addReducer((state, ...args) => {
-                const [ client ] = args;
-
-                if(client && isUUID(client.id)) {
-                    if(state.clients.has(client.id)) {
-                        state.clients.delete(client.id);
-                    } else {
-                        state.clients.set(client.id, client);
-                    }
-
-                    return {
-                        ...state,
-
-                        clients: state.clients,
-                    };
-                }
-
-                return state;
-            });
+            this.clients = new Map();
 
             this.ws.on("connection", client => {
                 client.id = uuidv4();
-                client.on("message", this.onMessage.bind(this));
-                client.on("close", code => this.onClose.call(this, code, client));
+                client.on("message", this.onMessage);
+                client.on("close", code => this.onClose(code, client));
                 client.send(JSON.stringify({
                     type: EnumMessageType.CLIENT_ID,
                     payload: client.id,
                 }));
 
-                this.next(client);
+                if(client && isUUID(client.id)) {
+                    if(this.clients.has(client.id)) {
+                        this.clients.delete(client.id);
+                    } else {
+                        this.clients.set(client.id, client);
+                    }
+                }
             });
+        } else if(this.isClient) {
+            this.clientId = null;
         }
         
         if("on" in this.ws) {
@@ -123,17 +93,10 @@ export default class WebSocketNode extends Node {
         }
     }
 
-    get ws() {
-        return this.state.ws;
-    }
-
     get isReady() {
         return this.ws && this.ws.readyState === 1;
     }
 
-    get type() {
-        return this.state.type;
-    }
     get isClient() {
         return this.type === EnumType.CLIENT;
     }
@@ -156,7 +119,7 @@ export default class WebSocketNode extends Node {
             let client;
 
             if(isUUID(clientId)) {
-                client = this.state.clients.get(clientId);
+                client = this.clients.get(clientId);
             } else if(typeof clientId === "object") {
                 client = clientId;
             }
@@ -189,20 +152,20 @@ export default class WebSocketNode extends Node {
             if(this.isServer) {
                 const data = JSON.parse(msg);
             
-                if(typeof this.state.hooks.receive === "function") {
-                    this.state.hooks.receive.call(this, data);
+                if(typeof this.hooks.receive === "function") {
+                    this.hooks.receive(this, data);
                 }
             } else {
                 const data = JSON.parse(msg.data);
 
                 if(data.type === EnumMessageType.CLIENT_ID) {
                     if(isUUID(data.payload)) {
-                        this.state.clientId = data.payload;      // Save assigned UUID from server
+                        this.clientId = data.payload;      // Save assigned UUID from server
                     }
                 }                
             
-                if(typeof this.state.hooks.receive === "function") {
-                    this.state.hooks.receive.call(this, data);
+                if(typeof this.hooks.receive === "function") {
+                    this.hooks.receive(this, data);
                 }
             }
         } catch (e) {

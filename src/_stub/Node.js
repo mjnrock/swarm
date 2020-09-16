@@ -3,7 +3,7 @@ import { v4 as uuidv4 } from "uuid";
 import { deepEqual } from "fast-equals";
 
 export const EnumEventType = {
-    NEXT: "Node.Next",
+    UPDATE: "Node.Update",
     ERROR: "Node.Error",
 };
 
@@ -82,25 +82,23 @@ export default class Node extends EventEmitter {
      * @param  {...any} args 
      */
     next(...args) {
-        const oldState = { ...this.state };
-        let newState = this.state;
+        const oldState = { ...this.state } || {};
+        let newState = { ...this.state };
 
         for(let fn of this._reducers.values()) {
             if(fn instanceof Node) {
-                newState = fn.next.call(fn, newState, ...args);   // Allow for a Node itself to be a reducer (via its .next)
+                newState = fn.next(newState, ...args) || newState;   // Allow for a Node itself to be a reducer (via its .next)
             } else {
-                newState = fn.call(this, newState, ...args);
+                newState = fn(newState, ...args) || newState;
             }
         }
 
-        if(this.state === newState) {
-            return;
-        } else if(!deepEqual(this.state, newState)) {    //FIXME This could be a faster comparison, instead
+        if(!deepEqual(this.state, newState)) {
             this.state = newState;
 
             if(this.config.suppress !== true) {
                 //NOTE  As this is just an information event, spread syntax is used; therefore, utilize accordingly (e.g. no classes will remain)
-                this.emit(EnumEventType.NEXT, {
+                this.emit(EnumEventType.UPDATE, {
                     current: { ...newState },
                     previous: oldState,
                 });
@@ -109,21 +107,34 @@ export default class Node extends EventEmitter {
 
         for(let fn of this._effects.values()) {
             if(fn instanceof Node) {
-                fn.next.call(fn, {
-                    current: { ...newState },
-                    previous: oldState,
-                }, ...args);   // Allow for a Node itself to be invoked as a direct consequence of another Node's invocation
+                fn.next(this.state, oldState, ...args);   // Allow for a Node itself to be invoked as a direct consequence of another Node's invocation
             } else {
-                fn.call(this, {
-                    current: { ...newState },
-                    previous: oldState,
-                }, ...args);
+                fn(this.state, oldState, ...args);
             }
         }
 
         return this.state;
     }
 
+    static TypedMessage(type, fn) {
+        if(Array.isArray(type)) {
+            return function (state, msg, ...args) {
+                if(type.includes(msg.type)) {
+                    return fn.call(this, state, msg, ...args);
+                }
+
+                return state;
+            };
+        }
+
+        return function (state, msg, ...args) {
+            if(msg.type === type) {
+                return fn.call(this, state, msg, ...args);
+            }
+
+            return state;
+        };
+    }
 
     suppress() {
         this.config.suppress = true;
