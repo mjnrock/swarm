@@ -1,4 +1,4 @@
-import Node from "../Node";
+import Node from "./Node";
 import { v4 as uuidv4, validate as isUUID } from "uuid";
 
 export const EnumType = {
@@ -201,7 +201,6 @@ export default class WebSocketNode extends Node {
                 this.state.hooks.receive.call(this, data);
             }
         } catch (e) {
-            console.log(e)
             this.onError(e);
         }
     }

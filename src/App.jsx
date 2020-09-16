@@ -1,10 +1,16 @@
 import React from "react";
-import Controller, { EnumKeyMessage } from "./controller/Controller";
+import WebSocketNode from "./_stub/WebSocketNode";
 
-const controller = new Controller();
-controller.bindKey(32, (...args) => console.log(...args));
-controller.bindKey(32, (...args) => console.log(...args), EnumKeyMessage.KEY_DOWN);
-controller.bindMouse(0, (...args) => console.log(...args));
+const c1 = new WebSocketNode({
+    ws: new WebSocket(`ws://localhost:8080`),
+    receive: console.log,
+});
+
+setTimeout(() => {
+    c1.send("test", {
+        cats: 1,
+    });
+}, 500);
 
 function App() {
     return (
