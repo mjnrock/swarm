@@ -25,6 +25,9 @@ export default class Station extends EventEmitter {
 
         this.channels.set(name, channel);
     }
+    hasChannel(name) {
+        return this.channels.has(name);
+    }
     getChannel(name) {
         return this.channels.get(name);
     }

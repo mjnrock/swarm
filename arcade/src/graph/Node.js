@@ -13,8 +13,8 @@ export default class Node extends CoreNode {
         this.portals = new Map();
         this.entities = new Set(entities);
 
-        for(let [ x, y, map, nx, ny ] of portals) {
-            this.portals.set(`${ x }.${ y }`, [ map, nx, ny ]);
+        for(let [ x, y, m, nx, ny ] of portals) {
+            this.portals.set(`${ x }.${ y }`, [ m, nx, ny ]);
         }
     }
 

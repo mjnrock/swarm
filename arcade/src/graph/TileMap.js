@@ -13,7 +13,7 @@ export default class TileMap {
         meta = {},
         generator,
     } = {}) {
-        this.type = type;        
+        this.type = type;    
         this.meta = meta;
         
         this.width = width;

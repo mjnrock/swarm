@@ -20,13 +20,6 @@ export default class Graphable extends Component {
             model,
             mass,
             isColliding: false,
-        }, {
-            hooks: {
-                node: node => {
-                    
-                    return node;
-                }
-            }
         });
     }
 
