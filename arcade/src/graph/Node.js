@@ -1,5 +1,12 @@
 import CoreNode from "./../Node";
 import { EnumComponentType } from "./../entity/component/Component";
+import Station from "../broadcast/Station";
+import Entity from "../entity/Entity";
+
+export const EnumMessageType = {
+    JOIN_WORLD: "JOIN_WORLD",
+    LEAVE_WORLD: "LEAVE_WORLD",
+};
 
 export default class Node extends CoreNode {
     constructor({
@@ -50,5 +57,48 @@ export default class Node extends CoreNode {
         }
 
         return entities;
+    }
+
+    addEntity(...entries) {
+        let joins = [];
+        for(let entry of entries) {
+            const [ x, y, entity ] = entry || [];
+
+            if(entity instanceof Entity) {
+                entity.comp(EnumComponentType.GRAPH, comp => {
+                    comp.node = this;
+                    comp.x = x;
+                    comp.y = y;
+                });
+    
+                joins.push(entity);
+
+                this.entities.add(entity);
+            }
+        }
+
+        if(joins.length) {
+            Station.$.invoke("node", this, EnumMessageType.JOIN_WORLD, joins);
+        }
+    }
+    removeEntity(...entities) {
+        let leaves = [];
+        for(let entity of entities) {
+            if(entity instanceof Entity) {
+                entity.comp(EnumComponentType.GRAPH, comp => {
+                    comp.node = null;
+                    comp.x = null;
+                    comp.y = null;
+                });
+
+                leaves.push(entity);
+                
+                this.entities.delete(entity);
+            }
+        }
+
+        if(leaves.length) {
+            Station.$.invoke("node", this, EnumMessageType.LEAVE_WORLD, leaves);
+        }
     }
 }
