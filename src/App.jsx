@@ -8,14 +8,14 @@ const station = new Station([
     "server",
 ]);
 
-const c1 = new WebSocketNode({
+const wsn = new WebSocketNode({
     ws: new WebSocket(`ws://localhost:8080`),
     receive: station.broadcast.bind(station),
 });
 
-station.join("server", c1.next);
+station.join("server", wsn.next);
 
-c1.addReducer(Node.TypedMessage([
+wsn.addReducer(Node.TypedMessage([
     EnumEventType.ACTIVATE,
     EnumEventType.DEACTIVATE,
 ], (state, msg) => {
@@ -35,7 +35,7 @@ c1.addReducer(Node.TypedMessage([
         [ key ]: value,   // If positive, last time an ACTIVATE happened
     };
 }));
-c1.addEffect((current, previous) => console.log(current));
+wsn.addEffect((current, previous) => console.log(current));
 
 function App() {
     return (

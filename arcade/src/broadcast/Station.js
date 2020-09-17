@@ -63,12 +63,19 @@ export default class Station extends EventEmitter {
     }
 
     join(channel, fn) {
-        console.log(fn)
         if(typeof fn === "function") {
             this.channels.get(channel).join(fn);
         }
     }
     leave(channel, fn) {
         this.channels.get(channel).leave(fn);
+    }
+
+    static get $() {
+        if(!Station.Instance) {
+            Station.Instance = new Station();
+        }
+
+        return Station.Instance;
     }
 };
