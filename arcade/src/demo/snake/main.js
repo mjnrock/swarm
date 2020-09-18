@@ -1,14 +1,22 @@
-import WebSocket from "ws";
-import WebSocketNode from "./../../network/WebSocketNode";
-import HIDGamePadNode, { EnumEventType  } from "./../../input/HIDGamePadNode";
+import TileMap from "../../graph/TileMap";
+import Tile, { EnumTerrainType } from "../../graph/Tile";
+import Station from "../../broadcast/Station";
+import GraphNode from "../../graph/Node";
+import Entity from "../../entity/Entity";
 
-const hid = new HIDGamePadNode({ vid: 121, pid: 6 });
-const wss = new WebSocketNode({
-    wss: new WebSocket.Server({ port: 8080 }),
-    receive: console.info,
+const map = new TileMap({
+    width: 25,
+    height: 25,
+    generator: (x, y) => new Tile(EnumTerrainType.FLOOR),
 });
+const node = new GraphNode({
+    map: map,
+});
+const e1 = new Entity();
 
-hid.on(EnumEventType.ACTIVATE, e => wss.broadcast(EnumEventType.ACTIVATE, e));
-hid.on(EnumEventType.DEACTIVATE, e => wss.broadcast(EnumEventType.DEACTIVATE, e));
+Station.$.newChannel("node");
+Station.$.join("node", console.log);
 
-console.log(`WebSocket Server is running on port:`, 8080);
+node.addEntity(
+    [ 1, 1, e1 ],
+);

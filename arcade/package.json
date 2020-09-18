@@ -12,6 +12,7 @@
     },
     "scripts": {
         "start": "node esm.js",
+        "server": "node esm-server.js",
         "test": "node esm-test.js"
     }
 }
