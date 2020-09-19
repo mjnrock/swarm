@@ -10,8 +10,7 @@ import Routes from "./routes/package";
 
 import Game from "./lib/demo/snake/Game";
 
-// Game.$.connect();
-console.log(Game.$)
+Game.$.connect();
 Game.$.DemoWorld();
 
 export const Context = React.createContext(Game.$);

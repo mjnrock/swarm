@@ -116,6 +116,22 @@ export default class Game extends CoreNode {
         });
     }
 
+    // connect({ ws, receive } = {}) {
+    //     this.state.network = new WebSocketNode({
+    //         ws: ws || new WebSocket(`ws://localhost:8080`),
+    //         //TODO  Look into why this is coming through here as json string
+    //         receive: receive || (data => {
+    //             if(typeof data === "string" || data instanceof String) {
+    //                 try {
+    //                     data = JSON.parse(data);
+    //                 } catch(e) {}
+    //             }
+                
+    //             Station.$.broadcast(Station.$, data);
+    //         }),
+    //     });
+    // }
+
     DemoWorld() {
         this.map = new TileMap({
             width: 3,

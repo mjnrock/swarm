@@ -112,7 +112,16 @@ export default class Game extends CoreNode {
     connect({ ws, receive } = {}) {
         this.state.network = new WebSocketNode({
             ws: ws || new WebSocket(`ws://localhost:8080`),
-            receive: receive || (data => Station.$.broadcast(Station.$, data)),
+            //TODO  Look into why this is coming through here as json string
+            receive: receive || (data => {
+                if(typeof data === "string" || data instanceof String) {
+                    try {
+                        data = JSON.parse(data);
+                    } catch(e) {}
+                }
+                
+                Station.$.broadcast(Station.$, data);
+            }),
         });
     }
 
@@ -165,6 +174,7 @@ export default class Game extends CoreNode {
                 }
             }
         }));
+        this.addReducer((...args) => console.log(...args));
         this.addEffect((current) => {
             let velocity = [ 0, 0 ];
         

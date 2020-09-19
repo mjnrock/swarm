@@ -93,6 +93,8 @@ export default class Node extends EventEmitter {
             }
         }
 
+        console.log(...args)
+
         if(!deepEqual(this.state, newState)) {
             this.state = newState;
 
