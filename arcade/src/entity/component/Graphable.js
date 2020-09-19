@@ -29,16 +29,35 @@ export default class Graphable extends Component {
             y: this.state.y,
         };
     }
+    get vel() {
+        return {
+            vx: this.state.vx,
+            vy: this.state.vy,
+        };
+    }
 
-    setCoords(x, y) {
+    setPosition(x, y) {
         this.state.x = x;
         this.state.y = y;
 
         return this;
     }
+    addPosition(dx, dy) {
+        this.state.x += dx;
+        this.state.y += dy;
+
+        return this;
+    }
+
     setVelocity(vx, vy) {
         this.state.vx = vx;
         this.state.vy = vy;
+
+        return this;
+    }
+    addVelocity(dvx, dvy) {
+        this.state.vx += dvx;
+        this.state.vy += dvy;
 
         return this;
     }

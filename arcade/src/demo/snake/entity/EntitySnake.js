@@ -1,4 +1,4 @@
-import Entity from "../../../entity/Entity";
+import Entity from "./../../../entity/Entity";
 import { EnumComponentType } from "./component/Component"
 import Body from "./component/Body";
 

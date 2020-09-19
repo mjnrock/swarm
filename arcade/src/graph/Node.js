@@ -44,6 +44,21 @@ export default class Node extends CoreNode {
         return false;
     }
 
+    getEntities() {
+        return [ ...this.entities.values() ];
+    }
+    getEntity(indexOrId) {
+        const entities = this.getEntities();
+
+        for(let i = 0; i < entities.length; i++) {
+            const entity = entities[ i ];
+
+            if(indexOrId === i || entity.id === indexOrId) {
+                return entity;
+            }
+        }
+    }
+
     occupants(x, y, w, h) {
         let entities = [];
         for(let entity of this.entities.values()) {

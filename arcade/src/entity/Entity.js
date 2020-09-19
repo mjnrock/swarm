@@ -31,6 +31,13 @@ export default class Entity extends Node {
         }
     }
 
+    get position() {
+        return this.comp(EnumComponentType.GRAPH, comp => comp.pos);
+    }
+    get velocity() {
+        return this.comp(EnumComponentType.GRAPH, comp => comp.vel);
+    }
+
     getComponent(flag) {
         for(let comp of this.state.components.values()) {
             if(comp.flag === flag) {

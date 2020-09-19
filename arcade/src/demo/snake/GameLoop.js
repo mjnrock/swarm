@@ -1,16 +1,19 @@
 import MainLoop from "mainloop.js";
-import Game from "./_Game";
-import GameView from "./view/GameView";
 
 export default class GameLoop {
-    constructor(fps = 30) {
+    constructor(fps = 30, hooks = {}) {
         this._fps = fps;
+        this._hooks = hooks;
 
         this.loop = MainLoop.setBegin(this.pre.bind(this))
             .setUpdate(this.update.bind(this))
             .setDraw(this.draw.bind(this))
             .setEnd(this.post.bind(this))
             .setSimulationTimestep(this.spf);
+    }
+
+    get hooks() {
+        return this._hooks;
     }
 
     get fps() {
@@ -43,30 +46,38 @@ export default class GameLoop {
      * @param {number} ts Total elapsed time
      * @param {number} dt Frame delta in ms
      */
-    pre(ts, dt) {}
+    pre(ts, dt) {
+        try {
+            this._hooks.pre(ts, dt);
+        } catch(e) {}
+    }
 
     /**
      * @param {number} dt Frame delta in ms
      */
     update(dt) {
-        Game.$.graph.tick(dt / 1000, Date.now());
+        try {
+            this._hooks.update(Date.now(), dt);
+        } catch(e) {}
     }
 
     /**
      * @param {number} interpolationPercentage A factor between 0.0 and 1.0, used as a scaling weight similar to delta time
      */
-    draw(interpolationPercentage) {
-        if(Game.$.view.current instanceof GameView) {
-            Game.$.view.current.camera.draw();
-            Game.$.dispatch();
-        }
-        // console.log("%", interpolationPercentage);   //TODO Figure out how to add these "rendering fractional steps" into implementation
+    draw(interpolationPercentage) {        
+        try {
+            this._hooks.draw(Date.now(), interpolationPercentage);
+        } catch(e) {}
     }
 
     post(fps, panic) {
-        if (panic) {
+        if(panic) {
             let discardedTime = Math.round(MainLoop.resetFrameDelta());
             console.warn("Main loop panicked, probably because the browser tab was put in the background. Discarding ", discardedTime, "ms");
         }
+        
+        try {
+            this._hooks.post(fps);
+        } catch(e) {}
     }
 }
