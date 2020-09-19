@@ -59,6 +59,9 @@ export default class Body extends Component {
     }
 
     cascade(x, y) {
-        this.state.body.cascade([ x, y ]);
+        return this.state.body.cascade([ x, y ]);
+    }
+    each(fn, ...args) {
+        return this.state.body.each(fn, ...args);
     }
 }

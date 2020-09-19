@@ -131,21 +131,23 @@ export default class LinkedList {
     
     each(fn, ...args) {
         let current = this._head,
-            index = 0;
+            index = 0,
+            arr = [];
 
         while(current instanceof LinkedListNode) {
+            arr.push(current);
             fn(current, index, ...args);
 
             current = current._next;
             ++index;
         }
 
-        return this;
+        return arr;
     }
 
     cascade(value) {
         let pv;
-        this.each((lln, i) => {
+        return this.each((lln, i) => {
             if(i === 0) {
                 pv = lln.value;
                 lln.value = value;

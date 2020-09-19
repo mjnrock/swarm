@@ -23,9 +23,7 @@ node.addEntity(
 );
 
 e1.comp(EnumComponentType.BODY, comp => {
-    comp.head(1, 3);
-    comp.set(1, 1, 2);
-    comp.set(2, 1, 1);
+    comp.body.each((lln, i) => lln.value = [ 1, i + 1]);
 
     console.log("---------------")
     console.log(comp.head())
