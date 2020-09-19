@@ -2,7 +2,8 @@ import TileMap from "../../graph/TileMap";
 import Tile, { EnumTerrainType } from "../../graph/Tile";
 import Station from "../../broadcast/Station";
 import GraphNode from "../../graph/Node";
-import Entity from "../../entity/Entity";
+import EntitySnake from "./entity/EntitySnake";
+import { EnumComponentType } from "./entity/component/Component";
 
 const map = new TileMap({
     width: 25,
@@ -12,11 +13,38 @@ const map = new TileMap({
 const node = new GraphNode({
     map: map,
 });
-const e1 = new Entity();
+const e1 = new EntitySnake({ size: 3 });
 
 Station.$.newChannel("node");
-Station.$.join("node", console.log);
+// Station.$.join("node", console.log);
 
 node.addEntity(
     [ 1, 1, e1 ],
 );
+
+e1.comp(EnumComponentType.BODY, comp => {
+    comp.head(1, 3);
+    comp.set(1, 1, 2);
+    comp.set(2, 1, 1);
+
+    console.log("---------------")
+    console.log(comp.head())
+    console.log(comp.value(1))
+    console.log(comp.value(2))
+
+    console.log("---------------")
+    comp.cascade(5, 5);
+
+    console.log(comp.head())
+    console.log(comp.value(1))
+    console.log(comp.value(2))
+    
+    console.log("---------------")
+    comp.cascade(3, 3);
+
+    console.log(comp.head())
+    console.log(comp.value(1))
+    console.log(comp.value(2))
+    
+    return comp;
+});
