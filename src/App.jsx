@@ -1,46 +1,34 @@
 import React from "react";
-import Node from "./_stub/Node";
-import WebSocketNode from "./_stub/WebSocketNode";
-import Station from "./_stub/broadcast/Station";
-import { EnumEventType } from "./_stub/input/HIDGamePadNode";
+import {
+    BrowserRouter as Router,
+    Switch,
+    Route,
+} from "react-router-dom";
 
-const station = new Station([
-    "server",
-]);
+import ScrollToTop from "./ScrollToTop";
+import Routes from "./routes/package";
 
-const wsn = new WebSocketNode({
-    ws: new WebSocket(`ws://localhost:8080`),
-    receive: station.broadcast.bind(station),
-});
+import Game from "./lib/demo/snake/Game";
 
-station.join("server", wsn.next);
+Game.$.connect();
+Game.$.createWorld({ fps = 5 });
 
-wsn.addReducer(Node.TypedMessage([
-    EnumEventType.ACTIVATE,
-    EnumEventType.DEACTIVATE,
-], (state, msg) => {
-    const { key, value } = msg.payload;
-
-    if(value === false) {
-        return {
-            ...state,
-    
-            [ key ]: -Date.now(),   // If negative, last time a DEACTIVATE happened
-        };
-    }
-
-    return {
-        ...state,
-
-        [ key ]: value,   // If positive, last time an ACTIVATE happened
-    };
-}));
-wsn.addEffect((current, previous) => console.log(current));
+export const Context = React.createContext(Game.$);
 
 function App() {
     return (
-        <div>Test</div>
-    );
+        <Router>
+            <ScrollToTop>
+                <Context.Provider value={{ node: Game.$ }}>
+                    <Switch>                            
+                        <Route path="/">
+                            <Routes.Home />
+                        </Route>
+                    </Switch>
+                </Context.Provider>
+            </ScrollToTop>
+        </Router>
+    )
 }
 
 export default App;

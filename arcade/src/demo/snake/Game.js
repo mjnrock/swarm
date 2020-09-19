@@ -1,6 +1,12 @@
 import Node from "./../../Node";
 import GameLoop from "./GameLoop";
 import { v4 as uuidv4 } from "uuid";
+import WebSocketNode from "./../../network/WebSocketNode";
+import Station from "./../../broadcast/Station";
+import GraphNode from "./../../graph/Node";
+import TileMap from "./../../graph/TileMap";
+import Tile from "./../../graph/Tile";
+import { EnumComponentType } from "./../../entity/component/Component";
 
 export const EnumEventType = {
     GAME_START: "Game.Start",
@@ -13,6 +19,8 @@ export default class Game extends Node {
             state: {
                 data: {},
                 loop: new GameLoop(fps),
+                player: null,
+                network: null,
     
                 settings: {
                     isRunning: false,
@@ -80,6 +88,115 @@ export default class Game extends Node {
         return this.state.react;
     }
 
+    get player() {
+        return this.state.player;
+    }
+
     onTick(ts, dt) {}
     onDraw(ts, ip) {}
+
+    connect({ ws, receive } = {}) {
+        this.state.network = new WebSocketNode({
+            ws: ws || new WebSocket(`ws://localhost:8080`),
+            receive: receive || (data => Station.$.broadcast(Station.$, data)),
+        });
+    }
+
+    static DemoWorld({ fps = 5 } = {}) {
+        this.map = new TileMap({
+            width: 3,
+            height: 3,
+            generator: (x, y) => new Tile(EnumTerrainType.FLOOR),
+        });
+        this.node = new GraphNode({
+            map: this.map,
+        });
+        this.state.player = new EntitySnake({ size: 3 });
+        
+        Station.$.newChannel("node");
+        // Station.$.join("node", console.log);
+        
+        this.state.player.comp(EnumComponentType.BODY, comp => {
+            comp.body.each((lln, i) => {
+                lln.value = [ 1, i + 1 ];
+        
+                if(i === 0) {
+                    this.state.player.comp(EnumComponentType.GRAPH, comp => {
+                        comp.setPosition(...lln.value);
+                        comp.setVelocity(1, 1);
+                        
+                        return comp;
+                    });
+        
+                    node.addEntity(
+                        [ ...lln.value, this.state.player ],
+                    );
+                }
+            });
+            
+            return comp;
+        });
+        
+        this.fps = fps;
+        Station.$.join("node", this.next.bind(this));
+        this.addReducer(CoreNode.TypedMessage([
+            HIDEnumEventType.ACTIVATE,
+            // HIDEnumEventType.DEACTIVATE,
+        ], (state, data) => {
+            return {
+                ...state,
+        
+                data: {
+                    ...state.data,
+                    direction: data.payload.key,
+                }
+            }
+        }));
+        this.addEffect((current) => {
+            const entity = node.getEntity(0);
+            let velocity = [ 0, 0 ];
+        
+            if(current.data.direction === "dir_up") {
+                velocity = [ 0, -1 ];
+            } else if(current.data.direction === "dir_down") {
+                velocity = [ 0, 1 ];
+            } else if(current.data.direction === "dir_left") {
+                velocity = [ -1, 0 ];
+            } else if(current.data.direction === "dir_right") {
+                velocity = [ 1, 0 ];
+            }    
+            
+            entity.comp(EnumComponentType.GRAPH, comp => {
+                comp.setVelocity(...velocity);
+                
+                return comp;
+            });
+        });
+        this.onTick = (ts, dt) => {            
+            this.state.player.comp(EnumComponentType.GRAPH, comp => {
+                comp.applyVelocity(dt / 1000);
+                
+                return comp;
+            });
+        
+            this.state.player.comp(EnumComponentType.BODY, comp => {
+                const { x, y } = entity.position;
+        
+                comp.cascade(~~Number(x.toFixed(1)), ~~Number(y.toFixed(1)));
+                
+                return comp;
+            });
+        
+            const { x, y } = this.state.player.position;
+            if(!node.isWithinBounds(x, y)) {
+                game.this();
+        
+                console.log("-=: GAME OVER :=-");
+            } else {
+                console.log("Pos: ", `${ x }, ${ y }`);
+            }
+        }
+        
+        this.start();
+    }
 }

@@ -25,6 +25,9 @@ export default class Station extends EventEmitter {
 
         this.channels.set(name, channel);
     }
+    hasChannel(name) {
+        return this.channels.has(name);
+    }
     getChannel(name) {
         return this.channels.get(name);
     }
@@ -63,12 +66,19 @@ export default class Station extends EventEmitter {
     }
 
     join(channel, fn) {
-        console.log(fn)
         if(typeof fn === "function") {
             this.channels.get(channel).join(fn);
         }
     }
     leave(channel, fn) {
         this.channels.get(channel).leave(fn);
+    }
+
+    static get $() {
+        if(!Station.Instance) {
+            Station.Instance = new Station();
+        }
+
+        return Station.Instance;
     }
 };
