@@ -1,5 +1,5 @@
-import CoreNode from "./../Node";
-import { EnumComponentType } from "./../entity/component/Component";
+import CoreNode from "../Node";
+import { EnumComponentType } from "../entity/component/Component";
 import Station from "../broadcast/Station";
 import Entity from "../entity/Entity";
 
@@ -51,7 +51,7 @@ export default class Node extends CoreNode {
 
         if(gc) {
             for(let [ x, y, map, nx, ny ] of this.portals.values()) {
-                if(~~gc.x === x + w && ~~gc.y === y) {
+                if(~~gc.x === x && ~~gc.y === y) {
                     //TODO Invoke a change of .map event in the component itself
                     gc.map = map;
                     gc.x = nx;

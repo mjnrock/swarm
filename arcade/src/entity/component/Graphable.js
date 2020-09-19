@@ -1,3 +1,4 @@
+/* eslint-disable */
 import Component, { EnumComponentType } from "./Component";
 
 export const EnumDirection = {

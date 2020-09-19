@@ -10,8 +10,9 @@ import Routes from "./routes/package";
 
 import Game from "./lib/demo/snake/Game";
 
-Game.$.connect();
-Game.$.createWorld({ fps = 5 });
+// Game.$.connect();
+console.log(Game.$)
+Game.$.DemoWorld();
 
 export const Context = React.createContext(Game.$);
 

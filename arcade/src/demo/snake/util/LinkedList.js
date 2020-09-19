@@ -18,11 +18,15 @@ export class LinkedListNode {
         if(this._previous) {
             return this._previous.value;
         }
+
+        return null;
     }
     get nvalue() {
         if(this._next) {
             return this._next.value;
         }
+
+        return null;
     }
 }
 

@@ -1,4 +1,4 @@
-import Node from "./../../Node";
+import CoreNode from "./../../Node";
 import GameLoop from "./GameLoop";
 import { v4 as uuidv4 } from "uuid";
 import WebSocketNode from "./../../network/WebSocketNode";
@@ -7,13 +7,16 @@ import GraphNode from "./../../graph/Node";
 import TileMap from "./../../graph/TileMap";
 import Tile from "./../../graph/Tile";
 import { EnumComponentType } from "./../../entity/component/Component";
+import EnumTerrainType from "./../../graph/Tile";
+import EntitySnake from "./entity/EntitySnake";
+import { EnumEventType as HIDEnumEventType } from "./../../input/HIDGamePadNode";
 
 export const EnumEventType = {
     GAME_START: "Game.Start",
     GAME_STOP: "Game.Stop",
 };
 
-export default class Game extends Node {
+export default class Game extends CoreNode {
     constructor({ settings = {}, fps = 60 } = {}) {
         super({
             state: {
@@ -21,6 +24,7 @@ export default class Game extends Node {
                 loop: new GameLoop(fps),
                 player: null,
                 network: null,
+                node: null,
     
                 settings: {
                     isRunning: false,
@@ -91,6 +95,16 @@ export default class Game extends Node {
     get player() {
         return this.state.player;
     }
+    set player(player) {
+        return this.state.player = player;
+    }
+
+    get node() {
+        return this.state.node;
+    }
+    set node(node) {
+        return this.state.node = node;
+    }
 
     onTick(ts, dt) {}
     onDraw(ts, ip) {}
@@ -102,7 +116,7 @@ export default class Game extends Node {
         });
     }
 
-    static DemoWorld({ fps = 5 } = {}) {
+    DemoWorld() {
         this.map = new TileMap({
             width: 3,
             height: 3,
@@ -128,7 +142,7 @@ export default class Game extends Node {
                         return comp;
                     });
         
-                    node.addEntity(
+                    this.node.addEntity(
                         [ ...lln.value, this.state.player ],
                     );
                 }
@@ -137,7 +151,6 @@ export default class Game extends Node {
             return comp;
         });
         
-        this.fps = fps;
         Station.$.join("node", this.next.bind(this));
         this.addReducer(CoreNode.TypedMessage([
             HIDEnumEventType.ACTIVATE,
@@ -153,7 +166,6 @@ export default class Game extends Node {
             }
         }));
         this.addEffect((current) => {
-            const entity = node.getEntity(0);
             let velocity = [ 0, 0 ];
         
             if(current.data.direction === "dir_up") {
@@ -166,7 +178,7 @@ export default class Game extends Node {
                 velocity = [ 1, 0 ];
             }    
             
-            entity.comp(EnumComponentType.GRAPH, comp => {
+            this.state.player.comp(EnumComponentType.GRAPH, comp => {
                 comp.setVelocity(...velocity);
                 
                 return comp;
@@ -180,7 +192,7 @@ export default class Game extends Node {
             });
         
             this.state.player.comp(EnumComponentType.BODY, comp => {
-                const { x, y } = entity.position;
+                const { x, y } = this.state.player.position;
         
                 comp.cascade(~~Number(x.toFixed(1)), ~~Number(y.toFixed(1)));
                 
@@ -188,8 +200,8 @@ export default class Game extends Node {
             });
         
             const { x, y } = this.state.player.position;
-            if(!node.isWithinBounds(x, y)) {
-                game.this();
+            if(!this.node.isWithinBounds(x, y)) {
+                this.this();
         
                 console.log("-=: GAME OVER :=-");
             } else {

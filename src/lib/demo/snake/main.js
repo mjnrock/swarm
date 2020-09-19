@@ -111,4 +111,5 @@ game.onTick = (ts, dt) => {
         console.log("Pos: ", `${ x }, ${ y }`);
     }
 }
+
 game.start();

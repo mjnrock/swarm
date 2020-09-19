@@ -1,5 +1,3 @@
-import Tile from "./Tile";
-
 export const EnumMapType = {
     SQUARE_GRID: 1,
     HEX_GRID: 2,
