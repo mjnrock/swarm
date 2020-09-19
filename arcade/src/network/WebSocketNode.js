@@ -156,16 +156,21 @@ export default class WebSocketNode extends Node {
                     this.hooks.receive(this, data);
                 }
             } else {
-                const data = JSON.parse(msg.data);
+                let data;
+                if(typeof msg === "string" || msg instanceof String) {
+                    data = JSON.parse(msg);
+                } else if(typeof msg === "object") {
+                    data = "data" in msg ? msg.data : msg;
+                }
 
                 if(data.type === EnumMessageType.CLIENT_ID) {
                     if(isUUID(data.payload)) {
                         this.clientId = data.payload;      // Save assigned UUID from server
                     }
-                }                
+                }
             
                 if(typeof this.hooks.receive === "function") {
-                    this.hooks.receive(this, data);
+                    this.hooks.receive.call(this, data);
                 }
             }
         } catch (e) {

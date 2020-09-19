@@ -109,9 +109,7 @@ export default class HIDGamePadNode extends Node {
             return state;
         });
 
-        this.addEffect((state, ...args) => {
-            let { current, previous } = state;
-
+        this.addEffect((current, previous, ...args) => {
             if(!deepEqual(current, previous)) {
                 current = current.current;
                 previous = previous.current;

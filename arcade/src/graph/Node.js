@@ -25,6 +25,27 @@ export default class Node extends CoreNode {
         }
     }
 
+    get width() {
+        return this.map.width;
+    }
+    get height() {
+        return this.map.height;
+    }
+    get bounds() {
+        return {
+            top: 0,
+            bottom: this.map.height,
+            left: 0,
+            right: this.map.width,
+        };
+    }
+
+    isWithinBounds(x, y) {
+        const { top, bottom, left, right } = this.bounds;
+
+        return x >= left && x <= right && y >= top && y <= bottom;
+    }
+
     checkPortal(entity) {
         const gc = entity.getComponent(EnumComponentType.GRAPH);
 

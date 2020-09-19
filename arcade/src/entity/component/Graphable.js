@@ -66,6 +66,9 @@ export default class Graphable extends Component {
         this.state.x += this.state.vx * dt;
         this.state.y += this.state.vy * dt;
 
+        this.state.x = parseFloat(this.state.x.toFixed(3));
+        this.state.y = parseFloat(this.state.y.toFixed(3));
+
         return this;
     }
 };

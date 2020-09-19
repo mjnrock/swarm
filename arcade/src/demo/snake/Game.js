@@ -11,6 +11,7 @@ export default class Game extends Node {
     constructor({ settings = {}, fps = 60 } = {}) {
         super({
             state: {
+                data: {},
                 loop: new GameLoop(fps),
     
                 settings: {

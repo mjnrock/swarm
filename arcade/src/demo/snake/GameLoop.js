@@ -37,7 +37,7 @@ export default class GameLoop {
         return this;
     }
     stop() {
-        
+        this.loop.stop();
 
         return this;
     }
