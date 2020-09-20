@@ -1,4 +1,5 @@
 import LayeredCanvasNode from "@lespantsfancy/hive/lib/client/LayeredCanvasNode";
+import { EnumComponentType } from "./../demo/snake/entity/component/Component";
 
 export default class TileCamera extends LayeredCanvasNode {
     constructor(node, { x, y, w, h, tw = 32, th = 32, size = [], subject, stack = [], game, scale = 1.0, rotation = 0, translation = [ 0, 0 ] } = {}) {
@@ -75,10 +76,29 @@ export default class TileCamera extends LayeredCanvasNode {
     }
 
     draw(...args) {
+        if(this.canvas !== this.game.react.canvas) {
+            this.game.react.canvas.width = this.width;
+            this.game.react.canvas.height = this.height;
+
+            this.canvas = this.game.react.canvas;
+        }
+
+        this.ctx.clearRect(0, 0, this.width, this.height);
         this.node.map.each((tx, ty, tile) => {
             this.prop({
-                fillStyle: "#000",
-            }).gRect(tx * this.tw, ty * this.th, this.tw, this.th, { isFilled: true });
+                fillStyle: "#bbb",
+            }).gRect(tx, ty, 1, 1, { isFilled: true });
+        });
+
+        this.game.player.comp(EnumComponentType.BODY, comp => {
+            comp.each((lln, i) => {
+                const [ x, y ] = lln.value;
+                this.prop({
+                    fillStyle: i === 0 ? "#000" : "#555",
+                }).gRect(x, y, 1, 1, { isFilled: true });
+            })
+            
+            return comp;
         });
     }
 };
