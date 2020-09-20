@@ -18,14 +18,22 @@ export default class TileMap {
         this.height = height;
         
         this.tiles = new Map();
-        for(let w = 0; w < width; w++) {
-            for(let h = 0; h < height; h++) {
+        for(let x = 0; x < width; x++) {
+            for(let y = 0; y < height; y++) {
                 if(typeof generator === "function") {
-                    this.tiles.set(`${ w }.${ h }`, generator(w, h));
+                    this.tiles.set(`${ x }.${ y }`, generator(x, y));
                 } else {
-                    this.tiles.set(`${ w }.${ h }`, null);
+                    this.tiles.set(`${ x }.${ y }`, null);
                 }
             }
+        }
+    }
+
+    each(fn, ...args) {
+        for(let [ key, value ] of this.tiles.entries()) {
+            const [ tx, ty ] = key.split(".").map(v => ~~v);
+
+            fn(tx, ty, value, ...args);
         }
     }
 

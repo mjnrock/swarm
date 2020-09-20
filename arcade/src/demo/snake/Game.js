@@ -7,13 +7,17 @@ import GraphNode from "./../../graph/Node";
 import TileMap from "./../../graph/TileMap";
 import Tile from "./../../graph/Tile";
 import { EnumComponentType } from "./../../entity/component/Component";
-import EnumTerrainType from "./../../graph/Tile";
+import { EnumTerrainType } from "./../../graph/Tile";
 import EntitySnake from "./entity/EntitySnake";
 import { EnumEventType as HIDEnumEventType } from "./../../input/HIDGamePadNode";
+import ViewManager from "./../../view/ViewManager";
+import GameView from "../../view/GameView";
+import TileCamera from "./../../map/TileCamera";
 
 export const EnumEventType = {
     GAME_START: "Game.Start",
     GAME_STOP: "Game.Stop",
+    TICK: "Game.Tick",
 };
 
 export default class Game extends CoreNode {
@@ -25,6 +29,7 @@ export default class Game extends CoreNode {
                 player: null,
                 network: null,
                 node: null,
+                view: new ViewManager(),
     
                 settings: {
                     isRunning: false,
@@ -106,31 +111,31 @@ export default class Game extends CoreNode {
         return this.state.node = node;
     }
 
+    get view() {
+        return this.state.view;
+    }
+    set view(view) {
+        return this.state.view = view;
+    }
+
     onTick(ts, dt) {}
     onDraw(ts, ip) {}
 
     connect({ ws, receive } = {}) {
         this.state.network = new WebSocketNode({
             ws: ws || new WebSocket(`ws://localhost:8080`),
-            receive: receive || (data => Station.$.broadcast(Station.$, data)),
+            //TODO  Look into why this is coming through here as json string
+            receive: receive || (data => {
+                if(typeof data === "string" || data instanceof String) {
+                    try {
+                        data = JSON.parse(data);
+                    } catch(e) {}
+                }
+                
+                Station.$.broadcast(Station.$, data);
+            }),
         });
     }
-
-    // connect({ ws, receive } = {}) {
-    //     this.state.network = new WebSocketNode({
-    //         ws: ws || new WebSocket(`ws://localhost:8080`),
-    //         //TODO  Look into why this is coming through here as json string
-    //         receive: receive || (data => {
-    //             if(typeof data === "string" || data instanceof String) {
-    //                 try {
-    //                     data = JSON.parse(data);
-    //                 } catch(e) {}
-    //             }
-                
-    //             Station.$.broadcast(Station.$, data);
-    //         }),
-    //     });
-    // }
 
     DemoWorld() {
         this.map = new TileMap({
@@ -181,6 +186,7 @@ export default class Game extends CoreNode {
                 }
             }
         }));
+        this.addReducer((...args) => console.log(...args));
         this.addEffect((current) => {
             let velocity = [ 0, 0 ];
         
@@ -200,6 +206,7 @@ export default class Game extends CoreNode {
                 return comp;
             });
         });
+
         this.onTick = (ts, dt) => {            
             this.state.player.comp(EnumComponentType.GRAPH, comp => {
                 comp.applyVelocity(dt / 1000);
@@ -222,6 +229,34 @@ export default class Game extends CoreNode {
                 console.log("-=: GAME OVER :=-");
             } else {
                 console.log("Pos: ", `${ x }, ${ y }`);
+            }
+
+            //TODO Rewrite to respond to tick event, not emit it.
+            //TODO Make state update from receiving a tick event, at least as simple as .lastTick/.ticks/etc., so as to propagate to React via state change
+            this.emit(EnumEventType.TICK, [ ts, dt ]);
+        }
+        
+
+        this.view.create({
+            key: "GameView",
+            value:  () => new GameView({
+                node: this.node,
+                camera: new TileCamera(this.node, {
+                    x: 0,
+                    y: 0,
+                    w: 25,
+                    h: 25,
+                    tw: 32,
+                    th: 32,
+                    game: this,
+                })
+            }),
+        });
+        this.view.use("GameView");
+
+        this.onDraw = (ts, ip) => {
+            if(this.view.current instanceof GameView) {
+                this.view.current.camera.draw(this, ts, ip);
             }
         }
         

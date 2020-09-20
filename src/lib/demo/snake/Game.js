@@ -7,7 +7,7 @@ import GraphNode from "./../../graph/Node";
 import TileMap from "./../../graph/TileMap";
 import Tile from "./../../graph/Tile";
 import { EnumComponentType } from "./../../entity/component/Component";
-import EnumTerrainType from "./../../graph/Tile";
+import { EnumTerrainType } from "./../../graph/Tile";
 import EntitySnake from "./entity/EntitySnake";
 import { EnumEventType as HIDEnumEventType } from "./../../input/HIDGamePadNode";
 import ViewManager from "./../../view/ViewManager";
@@ -17,6 +17,7 @@ import TileCamera from "./../../map/TileCamera";
 export const EnumEventType = {
     GAME_START: "Game.Start",
     GAME_STOP: "Game.Stop",
+    TICK: "Game.Tick",
 };
 
 export default class Game extends CoreNode {
@@ -205,6 +206,7 @@ export default class Game extends CoreNode {
                 return comp;
             });
         });
+
         this.onTick = (ts, dt) => {            
             this.state.player.comp(EnumComponentType.GRAPH, comp => {
                 comp.applyVelocity(dt / 1000);
@@ -228,6 +230,10 @@ export default class Game extends CoreNode {
             } else {
                 console.log("Pos: ", `${ x }, ${ y }`);
             }
+
+            //TODO Rewrite to respond to tick event, not emit it.
+            //TODO Make state update from receiving a tick event, at least as simple as .lastTick/.ticks/etc., so as to propagate to React via state change
+            this.emit(EnumEventType.TICK, [ ts, dt ]);
         }
         
 
