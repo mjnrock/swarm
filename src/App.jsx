@@ -5,7 +5,7 @@ import {
     Route,
 } from "react-router-dom";
 
-import ScrollToTop from "./ScrollToTop";
+import ScrollToTop from "./components/ScrollToTop";
 import Routes from "./routes/package";
 
 import Game from "./lib/demo/snake/Game";

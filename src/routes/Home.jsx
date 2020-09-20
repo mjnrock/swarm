@@ -1,7 +1,7 @@
 /* eslint-disable */
 import React from "react";
 import { useNodeContext } from "@lespantsfancy/hive/lib/react";
-import { Segment } from "semantic-ui-react";
+import { Segment, Canvas } from "semantic-ui-react";
 
 import { Context } from "../App";
 
@@ -10,7 +10,7 @@ export default function Home(props) {
 
     return (
         <Segment>
-            
+            <Canvas src={ game.state.view.current.camera.canvas } />
         </Segment>
     )
 }
