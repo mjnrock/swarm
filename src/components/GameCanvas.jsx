@@ -10,7 +10,6 @@ export default function GameCanvas(props) {
     useEffect(() => {
         const ref = canvasRef.current;
 
-        console.log(ref)
         if(Game.$.state.react.canvas !== ref) {
             Game.$.state.react.canvas = ref;
         }

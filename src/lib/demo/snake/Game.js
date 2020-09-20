@@ -6,7 +6,7 @@ import Station from "./../../broadcast/Station";
 import GraphNode from "./../../graph/Node";
 import TileMap from "./../../graph/TileMap";
 import Tile from "./../../graph/Tile";
-import { EnumComponentType } from "./../../entity/component/Component";
+import { EnumComponentType } from "./entity/component/Component";
 import { EnumTerrainType } from "./../../graph/Tile";
 import EntitySnake from "./entity/EntitySnake";
 import { EnumEventType as HIDEnumEventType } from "./../../input/HIDGamePadNode";
@@ -139,26 +139,26 @@ export default class Game extends CoreNode {
 
     DemoWorld() {
         this.map = new TileMap({
-            width: 3,
-            height: 3,
+            width: 25,
+            height: 25,
             generator: (x, y) => new Tile(EnumTerrainType.FLOOR),
         });
         this.node = new GraphNode({
             map: this.map,
         });
-        this.state.player = new EntitySnake({ size: 3 });
+        this.player = new EntitySnake({ size: 3 });
         
         Station.$.newChannel("node");
-        // Station.$.join("node", console.log);
+        Station.$.newChannel("game");
         
-        this.state.player.comp(EnumComponentType.BODY, comp => {
+        this.player.comp(EnumComponentType.BODY, comp => {
             comp.body.each((lln, i) => {
                 lln.value = [ 1, i + 1 ];
         
                 if(i === 0) {
                     this.state.player.comp(EnumComponentType.GRAPH, comp => {
                         comp.setPosition(...lln.value);
-                        comp.setVelocity(1, 1);
+                        comp.setVelocity(0, 1);
                         
                         return comp;
                     });
@@ -186,18 +186,18 @@ export default class Game extends CoreNode {
                 }
             }
         }));
-        this.addReducer((...args) => console.log(...args));
         this.addEffect((current) => {
-            let velocity = [ 0, 0 ];
+            let velocity = [ this.player.velocity.vx, this.player.velocity.vy ],
+                factor = 10;
         
             if(current.data.direction === "dir_up") {
-                velocity = [ 0, -1 ];
+                velocity = [ 0, -1 * factor ];
             } else if(current.data.direction === "dir_down") {
-                velocity = [ 0, 1 ];
+                velocity = [ 0, 1 * factor ];
             } else if(current.data.direction === "dir_left") {
-                velocity = [ -1, 0 ];
+                velocity = [ -1 * factor, 0 ];
             } else if(current.data.direction === "dir_right") {
-                velocity = [ 1, 0 ];
+                velocity = [ 1 * factor, 0 ];
             }    
             
             this.state.player.comp(EnumComponentType.GRAPH, comp => {
@@ -216,15 +216,18 @@ export default class Game extends CoreNode {
         
             this.state.player.comp(EnumComponentType.BODY, comp => {
                 const { x, y } = this.state.player.position;
-        
-                comp.cascade(~~Number(x.toFixed(1)), ~~Number(y.toFixed(1)));
+                const { x: nx, y: ny } = comp.head();
+
+                if((x >= nx + 1) || (y >= ny + 1) || (x <= nx) || (y <= ny)) {
+                    comp.cascade(~~x, ~~y);
+                }
                 
                 return comp;
             });
         
             const { x, y } = this.state.player.position;
             if(!this.node.isWithinBounds(x, y)) {
-                this.this();
+                this.stop();
         
                 console.log("-=: GAME OVER :=-");
             } else {
@@ -233,7 +236,11 @@ export default class Game extends CoreNode {
 
             //TODO Rewrite to respond to tick event, not emit it.
             //TODO Make state update from receiving a tick event, at least as simple as .lastTick/.ticks/etc., so as to propagate to React via state change
-            this.emit(EnumEventType.TICK, [ ts, dt ]);
+            // this.emit(EnumEventType.TICK, [ ts, dt ]);
+            Station.$.invoke("game", Station.$, {
+                type: EnumEventType.TICK,
+                payload: [ ts, dt ],
+            });
         }
         
 
@@ -253,6 +260,17 @@ export default class Game extends CoreNode {
             }),
         });
         this.view.use("GameView");
+
+        Station.$.join("game", this.next.bind(this));
+        this.addReducer(CoreNode.TypedMessage(EnumEventType.TICK, (state, msg) => {
+            const [ ts, dt ] = msg.payload;
+
+            return {
+                ...state,
+        
+                lastTick: ts,
+            }
+        }));
 
         this.onDraw = (ts, ip) => {
             if(this.view.current instanceof GameView) {
