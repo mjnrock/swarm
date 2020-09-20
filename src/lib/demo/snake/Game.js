@@ -10,6 +10,9 @@ import { EnumComponentType } from "./../../entity/component/Component";
 import EnumTerrainType from "./../../graph/Tile";
 import EntitySnake from "./entity/EntitySnake";
 import { EnumEventType as HIDEnumEventType } from "./../../input/HIDGamePadNode";
+import ViewManager from "./../../view/ViewManager";
+import GameView from "../../view/GameView";
+import TileCamera from "./../../map/TileCamera";
 
 export const EnumEventType = {
     GAME_START: "Game.Start",
@@ -25,6 +28,7 @@ export default class Game extends CoreNode {
                 player: null,
                 network: null,
                 node: null,
+                view: new ViewManager(),
     
                 settings: {
                     isRunning: false,
@@ -104,6 +108,13 @@ export default class Game extends CoreNode {
     }
     set node(node) {
         return this.state.node = node;
+    }
+
+    get view() {
+        return this.state.view;
+    }
+    set view(view) {
+        return this.state.view = view;
     }
 
     onTick(ts, dt) {}
@@ -216,6 +227,30 @@ export default class Game extends CoreNode {
                 console.log("-=: GAME OVER :=-");
             } else {
                 console.log("Pos: ", `${ x }, ${ y }`);
+            }
+        }
+        
+
+        this.view.create({
+            key: "GameView",
+            value:  () => new GameView({
+                node: this.node,
+                camera: new TileCamera(this.node, {
+                    x: 0,
+                    y: 0,
+                    w: 25,
+                    h: 25,
+                    tw: 32,
+                    th: 32,
+                    game: this,
+                })
+            }),
+        });
+        this.view.use("GameView");
+
+        this.onDraw = (ts, ip) => {
+            if(this.view.current instanceof GameView) {
+                this.view.current.camera.draw(this, ts, ip);
             }
         }
         

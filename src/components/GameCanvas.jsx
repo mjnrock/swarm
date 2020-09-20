@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
 
-import Game from "./lib/Game";
+import Game from "./../lib/demo/snake/Game";
 
 export default function GameCanvas(props) {
     const { src: propsSrc, onDraw, ...rest } = props;
