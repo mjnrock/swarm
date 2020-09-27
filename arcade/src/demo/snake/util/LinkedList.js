@@ -74,10 +74,7 @@ export default class LinkedList {
         const lln = this.get(index);
 
         if(lln instanceof LinkedListNode) {
-
-            console.log(lln.value, value)
             lln.value = value;
-            console.log(lln.value, value)
         }
     }
 
