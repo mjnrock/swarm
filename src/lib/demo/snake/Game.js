@@ -263,6 +263,7 @@ export default class Game extends CoreNode {
 
         Station.$.join("game", this.next.bind(this));
         this.addReducer(CoreNode.TypedMessage(EnumEventType.TICK, (state, msg) => {
+            // eslint-disable-next-line
             const [ ts, dt ] = msg.payload;
 
             return {
