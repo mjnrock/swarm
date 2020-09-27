@@ -152,7 +152,7 @@ export default class Game extends CoreNode {
         Station.$.newChannel("game");
         
         this.player.comp(EnumComponentType.BODY, comp => {
-            const arr = [ 10, 10 ];
+            const arr = [ 24, 24 ];
             
             comp.set(0, ...arr);
             this.state.player.comp(EnumComponentType.GRAPH, comp => {
@@ -252,8 +252,8 @@ export default class Game extends CoreNode {
                     y: 0,
                     w: 50,
                     h: 50,
-                    tw: 32,
-                    th: 32,
+                    tw: 16,
+                    th: 16,
                     game: this,
                 })
             }),
