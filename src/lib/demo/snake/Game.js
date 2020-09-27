@@ -139,36 +139,33 @@ export default class Game extends CoreNode {
 
     DemoWorld() {
         this.map = new TileMap({
-            width: 25,
-            height: 25,
+            width: 50,
+            height: 50,
             generator: (x, y) => new Tile(EnumTerrainType.FLOOR),
         });
         this.node = new GraphNode({
             map: this.map,
         });
-        this.player = new EntitySnake({ size: 3 });
+        this.player = new EntitySnake({ size: 5 });
         
         Station.$.newChannel("node");
         Station.$.newChannel("game");
         
         this.player.comp(EnumComponentType.BODY, comp => {
-            comp.body.each((lln, i) => {
-                lln.value = [ 5, i + 5 ];
-        
-                if(i === 0) {
-                    this.state.player.comp(EnumComponentType.GRAPH, comp => {
-                        comp.setPosition(...lln.value);
-                        comp.setVelocity(0, 1);
-                        
-                        return comp;
-                    });
-        
-                    this.node.addEntity(
-                        [ ...lln.value, this.state.player ],
-                    );
-                }
-            });
+            const arr = [ 10, 10 ];
             
+            comp.set(0, ...arr);
+            this.state.player.comp(EnumComponentType.GRAPH, comp => {
+                comp.setPosition(...arr);
+                comp.setVelocity(0, 1);
+                
+                return comp;
+            });
+
+            this.node.addEntity(
+                [ ...arr, this.state.player ],
+            );
+
             return comp;
         });
         
@@ -219,7 +216,9 @@ export default class Game extends CoreNode {
                 const { x: nx, y: ny } = comp.head();
 
                 if((x >= nx + 1) || (y >= ny + 1) || (x <= nx) || (y <= ny)) {
-                    comp.cascade(~~x, ~~y);
+                    if(~~x !== ~~nx || ~~y !== ~~ny) {
+                        comp.cascade(~~x, ~~y);
+                    }
                 }
                 
                 return comp;
@@ -231,7 +230,7 @@ export default class Game extends CoreNode {
         
                 console.log("-=: GAME OVER :=-");
             } else {
-                console.log("Pos: ", `${ x }, ${ y }`);
+                // console.log("Pos: ", `${ x }, ${ y }`);
             }
 
             //TODO Rewrite to respond to tick event, not emit it.
@@ -251,8 +250,8 @@ export default class Game extends CoreNode {
                 camera: new TileCamera(this.node, {
                     x: 0,
                     y: 0,
-                    w: 25,
-                    h: 25,
+                    w: 50,
+                    h: 50,
                     tw: 32,
                     th: 32,
                     game: this,
