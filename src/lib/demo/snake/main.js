@@ -31,7 +31,7 @@ Station.$.newChannel("node");
 
 e1.comp(EnumComponentType.BODY, comp => {
     comp.body.each((lln, i) => {
-        lln.value = [ 1, i + 1 ];
+        lln.value = [ 5, i + 5 ];
 
         if(i === 0) {
             e1.comp(EnumComponentType.GRAPH, comp => {
