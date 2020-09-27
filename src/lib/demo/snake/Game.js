@@ -153,7 +153,7 @@ export default class Game extends CoreNode {
         
         this.player.comp(EnumComponentType.BODY, comp => {
             comp.body.each((lln, i) => {
-                lln.value = [ 1, i + 1 ];
+                lln.value = [ 10, i + 10 ];
         
                 if(i === 0) {
                     this.state.player.comp(EnumComponentType.GRAPH, comp => {

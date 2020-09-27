@@ -71,6 +71,7 @@ export default class HIDGamePadNode extends Node {
         this.addReducer((state, buffer) => {
             if(buffer instanceof Buffer) {                
                 const arr = [ ...buffer ];
+                // console.log(JSON.stringify(arr))
                 const result = { ...state.current };
 
                 for(let key in this.binding) {
@@ -180,6 +181,7 @@ export default class HIDGamePadNode extends Node {
 
         this.device.setNonBlocking(true);
         this.device.on("data", buffer => this.onBuffer(buffer));
+        this.device.on("error", buffer => console.log(buffer));
 
         return this;
     }
@@ -188,6 +190,7 @@ export default class HIDGamePadNode extends Node {
 
         this.device.setNonBlocking(true);
         this.device.on("data", buffer => this.onBuffer(buffer));
+        this.device.on("error", buffer => console.log(buffer));
 
         return this;
     }

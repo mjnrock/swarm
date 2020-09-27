@@ -7,16 +7,16 @@ import ViewManager from "./../components/ViewManager";
 export default function Home(props) {
     const subheader = [
         "Experienced Players Only",
-        "A Game of Shtrategery",
-        "Find your hole!",
-        "If I had a nickle...",
-        "Beware of Shnakes!",
-        "Horsefeathers!",
+        "A Game of Sneks",
+        "Fun for the Whole Family",
+        "Play with Grandma!",
+        "Find Your Hole!",
+        "There Be Sneks!",
     ];
 
     return (
         <Segment>
-            <Header as="h1" textAlign="center" style={{ fontFamily: "Freckle Face", fontSize: "5em" }}>Shnake!</Header>
+            <Header as="h1" textAlign="center" style={{ fontFamily: "Freckle Face", fontSize: "5em" }}>Snek!</Header>
             <Header as="h2" textAlign="center" style={{ fontFamily: "Freckle Face", fontWeight: 400 }}>{ subheader[ ~~(Math.random() * subheader.length) ] }</Header>
 
             <ViewManager />

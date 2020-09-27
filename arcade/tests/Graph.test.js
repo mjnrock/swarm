@@ -19,7 +19,7 @@ Station.$.newChannel("node");
 Station.$.join("node", console.log);
 
 node.addEntity(
-    [ 1, 1, e1 ],
+    [ 5, 5, e1 ],
     [ 2, 2, e2 ]
 );
 node.removeEntity(e2);
