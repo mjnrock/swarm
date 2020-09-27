@@ -37,10 +37,10 @@ export default class LinkedList {
 		this._tail = null;
     }
     
-    get next() {
+    get last() {
         return this._tail;
     }
-    get previous() {
+    get first() {
         return this._head;
     }
 
@@ -74,7 +74,10 @@ export default class LinkedList {
         const lln = this.get(index);
 
         if(lln instanceof LinkedListNode) {
-            lln._data = value;
+
+            console.log(lln.value, value)
+            lln.value = value;
+            console.log(lln.value, value)
         }
     }
 
@@ -150,17 +153,25 @@ export default class LinkedList {
     }
 
     cascade(value) {
-        let pv;
-        return this.each((lln, i) => {
-            if(i === 0) {
-                pv = lln.value;
-                lln.value = value;
-            } else {
-                let tpv = lln.value;
+        let current = this._head;
+        let temp = current.value;
+        current.value = value;
 
-                lln.value = pv;
-                pv = tpv;
+        while(current instanceof LinkedListNode) {
+            if(current !== this._head) {
+                let temp2 = current.value;
+
+                current.value = temp;
+                temp = temp2;
+
+                if(temp[ 0 ] === false) {
+                    return this;
+                }
             }
-        });
+
+            current = current._next;
+        }
+
+        return this;
     }
 }

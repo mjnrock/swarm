@@ -204,7 +204,7 @@ export default class Game extends CoreNode {
             });
         });
 
-        this.onTick = (ts, dt) => {            
+        this.onTick = (ts, dt) => {
             this.state.player.comp(EnumComponentType.GRAPH, comp => {
                 comp.applyVelocity(dt / 1000);
                 
@@ -215,10 +215,8 @@ export default class Game extends CoreNode {
                 const { x, y } = this.state.player.position;
                 const { x: nx, y: ny } = comp.head();
 
-                if((x >= nx + 1) || (y >= ny + 1) || (x <= nx) || (y <= ny)) {
-                    if(~~x !== ~~nx || ~~y !== ~~ny) {
-                        comp.cascade(~~x, ~~y);
-                    }
+                if(~~x !== ~~nx || ~~y !== ~~ny) {
+                    comp.cascade(~~x, ~~y);
                 }
                 
                 return comp;

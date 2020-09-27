@@ -1,21 +1,22 @@
 /* eslint-disable */
 import Component from "../../../../entity/component/Component";
 import { EnumComponentType } from "./Component";
+import LinkedList from "./../../util/LinkedList";
 
 export default class Body extends Component {
     constructor(size = 1) {
         super(EnumComponentType.BODY, {
-            body: [],
+            body: new LinkedList(),
         });
 
         this.grow(size);
     }
 
     get(index = 0) {        
-        return this.state.body[ index ];
+        return this.state.body.get(index);
     }
-    value(index = 0, asObject = true) {      
-        const arr = this.get(index);
+    value(index = 0, asObject = true) {
+        const arr = this.state.body.value(index);
 
         if(Array.isArray(arr)) {
             const [ x, y ] = arr;
@@ -33,7 +34,7 @@ export default class Body extends Component {
 
     grow(amount = 1) {
         for(let i = 0; i < amount; i++) {
-            this.state.body.push([ false, false ]);
+            this.state.body.add([ false, false ]);
         }
     }
 
@@ -46,33 +47,18 @@ export default class Body extends Component {
     }
 
     set(index, x, y) {
-        this.state.body[ index ] = [ x, y ];
+        this.state.body.set(index, [ x, y ]);
     }
     add(index, dx, dy) {
-        const [ x, y ] = this.state.body[ index ];
+        const [ x, y ] = this.state.body.value(index);
 
-        this.state.body[ index ] = [ x + dx, y + dy ];
+        this.set(index, x + dx, y + dy);
     }
 
     cascade(x, y) {
-        let temp = this.get(0);
-        this.set(0, x, y);
-
-        for(let i = 1; i < this.state.body.length; i++) {
-            let temp2 = this.get(i);
-
-            this.set(i, ...temp);
-
-            temp = temp2;
-
-            if(temp[ 0 ] === false) {
-                return this;
-            }
-        }
-
-        return this;
+        return this.state.body.cascade([ x, y ]);
     }
     each(fn, ...args) {
-        return this.state.body.forEach((value, i) => fn(value, i, ...args));
+        return this.state.body.each(fn, ...args);
     }
 }
