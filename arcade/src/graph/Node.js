@@ -137,4 +137,13 @@ export default class Node extends CoreNode {
             Station.$.invoke("node", this, EnumMessageType.LEAVE_WORLD, leaves);
         }
     }
+
+    each(fn, { offset = 0, args = [] } = {}) {
+        if(typeof fn === "function") {
+            const entities = [ ...this.entities.values() ];
+            for(let i = offset; i < entities.length; i++) {
+                fn(entities[ i ], ...args);
+            }
+        }
+    }
 }

@@ -9,6 +9,7 @@ import Tile from "./../../graph/Tile";
 import { EnumComponentType } from "./entity/component/Component";
 import { EnumTerrainType } from "./../../graph/Tile";
 import EntitySnake from "./entity/EntitySnake";
+import EntityFruit from "./entity/EntityFruit";
 import { EnumEventType as HIDEnumEventType } from "./../../input/HIDGamePadNode";
 import ViewManager from "./../../view/ViewManager";
 import GameView from "../../view/GameView";
@@ -205,22 +206,58 @@ export default class Game extends CoreNode {
         });
 
         this.onTick = (ts, dt) => {
-            this.state.player.comp(EnumComponentType.GRAPH, comp => {
-                comp.applyVelocity(dt / 1000);
-                
-                return comp;
-            });
+            this.node.each(entity => {
+                if(entity instanceof EntitySnake) {
+                    entity.comp(EnumComponentType.GRAPH, comp => {
+                        comp.applyVelocity(dt / 1000);
+                        
+                        return comp;
+                    });
         
-            this.state.player.comp(EnumComponentType.BODY, comp => {
-                const { x, y } = this.state.player.position;
-                const { x: nx, y: ny } = comp.head();
-
-                if(~~x !== ~~nx || ~~y !== ~~ny) {
-                    comp.cascade(~~x, ~~y);
-                }
+                    entity.comp(EnumComponentType.BODY, comp => {
+                        const { x, y } = entity.position;
+                        const { x: nx, y: ny } = comp.head();
+        
+                        if(~~x !== ~~nx || ~~y !== ~~ny) {
+                            comp.cascade(~~x, ~~y);
+                        }
+        
+                        let purge = [];
+                        this.node.each(e2 => {
+                            if(e2 instanceof EntityFruit) {
+                                e2.comp(EnumComponentType.GRAPH, graph => {
+                                    const { x: e2x, y: e2y } = graph.pos;
+            
+                                    if(~~x === ~~e2x && ~~y === ~~e2y) {
+                                        purge.push(e2);
+            
+                                        comp.grow(3);
+                                    }
+                                    
+                                    return graph;
+                                });
+                            }
+                        });
                 
-                return comp;
+                        purge.forEach(entity => {
+                            this.node.removeEntity(entity);
+                        });
+                        
+                        return comp;
+                    });
+                }
             });
+
+            if(Math.random() > 0.997) {                
+                const [ x, y ] = [ 
+                    ~~(Math.random() * this.state.node.width),
+                    ~~(Math.random() * this.state.node.height),
+                ];
+
+                this.node.addEntity(
+                    [ x, y, new EntityFruit({ x, y }) ],
+                );
+            }
         
             const { x, y } = this.state.player.position;
             if(!this.node.isWithinBounds(x, y)) {

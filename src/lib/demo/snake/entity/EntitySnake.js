@@ -1,5 +1,5 @@
 import Entity from "./../../../entity/Entity";
-import { EnumComponentType } from "./component/Component"
+import { EnumComponentType } from "./component/Component";
 import Body from "./component/Body";
 
 export default class EntitySnake extends Entity {

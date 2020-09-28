@@ -16,6 +16,6 @@ export default function GameCanvas(props) {
     });
 
     return (
-        <canvas ref={ canvasRef } { ...rest } />
+        <canvas ref={ canvasRef } style={{ border: "1px solid #000", borderRadius: 4, backgroundColor: "#ccc" }} { ...rest } />
     );
 };
