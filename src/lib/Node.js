@@ -136,6 +136,26 @@ export default class Node extends EventEmitter {
         };
     }
 
+    static TypedPayload(type, fn) {
+        if(Array.isArray(type)) {
+            return function (state, t, ...args) {
+                if(type.includes(t)) {
+                    return fn.call(this, state, t, ...args);
+                }
+
+                return state;
+            };
+        }
+
+        return function (state, t, ...args) {
+            if(t === type) {
+                return fn.call(this, state, t, ...args);
+            }
+
+            return state;
+        };
+    }
+
     suppress() {
         this.config.suppress = true;
 
